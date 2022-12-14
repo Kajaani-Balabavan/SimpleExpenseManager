@@ -74,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (ExpenseManagerException e) {
             e.printStackTrace();
         }
-
         /*** END ***/
     }
 

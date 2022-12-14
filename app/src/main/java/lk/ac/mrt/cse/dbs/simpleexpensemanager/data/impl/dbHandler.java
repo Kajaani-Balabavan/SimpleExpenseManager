@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,30 +21,13 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
 
 public class dbHandler extends SQLiteOpenHelper {
     private static final String DB_NAME = "200279N";
-    private static final int VERSION = 1;
-    private static final String TABLE1 = "ACCOUNT";
-    private static final String TABLE2 = "TRANSACTION_";
-    private static final String ACCOUNT_ACCOUNT_NO = "accountNo";
-    private static final String ACCOUNT_BANK = "bankName";
-    private static final String ACCOUNT_ACCOUNT_HOLDER_NAME = "accountHolderName";
-    private static final String ACCOUNT_BALANCE = "balance";
-    private static final String TRANSACTION_DATE = "date";
-    private static final String TRANSACTION_TYPE = "expenseType";
-    private static final String TRANSACTION_AMOUNT = "amount";
 
     public dbHandler(Context context) {
-        super(context, DB_NAME, null, VERSION);
+        super(context, DB_NAME, null, 1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-//        String CREATE_TABLE1 = "CREATE TABLE " + TABLE1 +
-//                " ( " + ACCOUNT_ACCOUNT_NO + " INTEGER PRIMARY KEY , " + ACCOUNT_BANK + " TEXT ," + ACCOUNT_ACCOUNT_HOLDER_NAME + " TEXT ," + ACCOUNT_BALANCE + " REAL);";
-//        sqLiteDatabase.execSQL(CREATE_TABLE1);
-//        String CREATE_TABLE2 = "CREATE TABLE " + TABLE2 +
-//                " (" + TRANSACTION_DATE + " TEXT , " + ACCOUNT_ACCOUNT_NO + " INTEGER ," + TRANSACTION_TYPE + " TEXT ," + TRANSACTION_AMOUNT + " REAL);";
-//        sqLiteDatabase.execSQL(CREATE_TABLE1);
-//        sqLiteDatabase.execSQL(CREATE_TABLE2);
         sqLiteDatabase.execSQL(
                 "create table ACCOUNT"+
                         "(accountNo text primary key, bankName text, accountHolderName text, balance integer)"
@@ -54,7 +36,6 @@ public class dbHandler extends SQLiteOpenHelper {
                 "create table TRANSACTION_"+
                         "(date text, accountNo text , expenseType text, amount integer, foreign key (accountNo) references ACCOUNT (accountNo) )"
         );
-
     }
 
     @Override
@@ -72,25 +53,23 @@ public class dbHandler extends SQLiteOpenHelper {
         data.put("accountHolderName", account.getAccountHolderName());
         data.put("balance", account.getBalance());
         database.insert("ACCOUNT", null, data);
-        //database.close();
     }
 
-    public void addTransaction(Date date,String accountNumber, ExpenseType expenseType, double amount) {
+    public void addTransaction(Date date,String accountNo, ExpenseType expenseType, double amount) {
         SQLiteDatabase database = this.getWritableDatabase();
         ContentValues data = new ContentValues();
-        DateFormat format_ = new SimpleDateFormat("m-d-yyyy", Locale.ENGLISH);
-        data.put("accountNo", accountNumber);
+        SimpleDateFormat format_ = new SimpleDateFormat("dd-MM-yyyy",Locale.ENGLISH);
+
         data.put("date", format_.format(date));
+        data.put("accountNo", accountNo);
         data.put("expenseType",expenseType.toString()) ;
         data.put("amount", amount);
-        database.insert("TRANSACTION", null, data);
-        //database.close();
+        database.insert("TRANSACTION_", null, data);
     }
 
     public void removeAccount(String accountNo) {
         SQLiteDatabase database = this.getWritableDatabase();
         database.delete("ACCOUNT", "accountNo =?", new String[]{accountNo});
-        //database.close();
     }
 
     public void updateAccount(Account account) {
@@ -101,7 +80,6 @@ public class dbHandler extends SQLiteOpenHelper {
         data.put("accountHolderName", account.getAccountHolderName());
         data.put("balance", account.getBalance());
         database.update("ACCOUNT",data, "accountNo =?", new String[]{account.getAccountNo()});
-        //database.close();
     }
 
     public Account accountDetails(String accNo) {
@@ -118,7 +96,6 @@ public class dbHandler extends SQLiteOpenHelper {
                 account = new Account(accountNo, bankName, accountHolderName, balance);
             }
         }
-        //database.close();
         return account;
     }
 
@@ -137,7 +114,6 @@ public class dbHandler extends SQLiteOpenHelper {
             accounts.add(account);
             details.moveToNext();
         }
-        //database.close();
         return accounts;
     }
 
@@ -146,24 +122,22 @@ public class dbHandler extends SQLiteOpenHelper {
         SQLiteDatabase database = this.getWritableDatabase();
         @SuppressLint("Recycle") Cursor res = database.rawQuery("select * from TRANSACTION_", null);
         ArrayList<Transaction> transaction = new ArrayList<>();
-        //@SuppressLint("SimpleDateFormat") DateFormat format_ = new SimpleDateFormat("dd-MM-yyyy");
-        DateFormat format_ = new SimpleDateFormat("m-d-yyyy", Locale.ENGLISH);
 
+        SimpleDateFormat format_ = new SimpleDateFormat("dd-MM-yyyy",Locale.ENGLISH);
         if (res.getCount() != 0) {
             while (res.moveToNext()) {
                 Date date = new Date();
                 try {
-                    date = format_.parse(res.getString(1));
+                    date = format_.parse(res.getString(0));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                String accountNo = res.getString(0);
+                String accountNo = res.getString(1);
                 ExpenseType expenseType = ExpenseType.valueOf(res.getString(2));
                 double amount = res.getDouble(3);
                 transaction.add(new Transaction(date, accountNo, expenseType, amount));
             }
         }
-        //database.close();
         return transaction;
     }
 
@@ -171,24 +145,22 @@ public class dbHandler extends SQLiteOpenHelper {
         SQLiteDatabase database = this.getWritableDatabase();
         @SuppressLint("Recycle") Cursor res = database.rawQuery("select * from TRANSACTION_ limit " + limit, null);
         ArrayList<Transaction> transaction = new ArrayList<>();
-        //@SuppressLint("SimpleDateFormat") DateFormat format_ = new SimpleDateFormat("dd-MM-yyyy");
-        DateFormat format_ = new SimpleDateFormat("m-d-yyyy", Locale.ENGLISH);
 
+        SimpleDateFormat format_ = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
         if (res.getCount() != 0) {
             while (res.moveToNext()) {
                 Date date = new Date();
                 try {
-                    date = format_.parse(res.getString(1));
+                    date = format_.parse(res.getString(0));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                String accountNo = res.getString(0);
+                String accountNo = res.getString(1);
                 ExpenseType expenseType = ExpenseType.valueOf(res.getString(2));
                 double amount = res.getDouble(3);
                 transaction.add(new Transaction(date, accountNo, expenseType, amount));
             }
         }
-        //database.close();
         return transaction;
     }
 }
