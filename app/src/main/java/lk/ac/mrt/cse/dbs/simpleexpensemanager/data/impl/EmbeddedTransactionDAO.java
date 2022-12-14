@@ -8,6 +8,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.TransactionDAO;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
@@ -22,8 +23,7 @@ public class EmbeddedTransactionDAO implements TransactionDAO {
 
     @Override
     public void logTransaction(Date date, String accountNo, ExpenseType expenseType, double amount) {
-        @SuppressLint("SimpleDateFormat") DateFormat format_ = new SimpleDateFormat("dd-MM-yyyy");
-        dbHandler.addTransaction(format_.format(date),accountNo,expenseType,amount);
+        dbHandler.addTransaction(date,accountNo,expenseType,amount);
     }
 
     @Override

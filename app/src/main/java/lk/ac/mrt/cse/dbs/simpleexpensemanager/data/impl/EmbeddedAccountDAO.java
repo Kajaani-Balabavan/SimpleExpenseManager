@@ -11,7 +11,7 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
 
 public class EmbeddedAccountDAO implements AccountDAO {
-    private final dbHandler dbHandler;
+    private dbHandler dbHandler;
 
     public EmbeddedAccountDAO(Context context) {
         dbHandler = new dbHandler(context);
